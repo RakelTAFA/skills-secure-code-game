@@ -31,16 +31,26 @@ Order = namedtuple('Order', 'id, items')
 Item = namedtuple('Item', 'type, description, amount, quantity')
 
 def validorder(order: Order):
-    net = 0
+    total_a_paye = 0
+    reste_a_paye = 0
+
+    # On ne doit pas mettre un paiement avant un produit, il faut au moins un produit avant un paiement.
+    if order.items[0].type == 'payment':
+        return 'Total amount payable for an order exceeded'
 
     for item in order.items:
         if item.type == 'payment':
-            net += Decimal(item.amount)
+            reste_a_paye += Decimal(item.amount)
         elif item.type == 'product':
-            net -= Decimal(item.amount * item.quantity)
+            total_a_paye += Decimal(item.amount * item.quantity)
         else:
             return "Invalid item type: %s" % item.type
-        net = round(net, 2)
+
+    # Montant arbitraire
+    if total_a_paye > 10000:
+        return 'Total amount payable for an order exceeded'
+
+    net = round(total_a_paye - reste_a_paye, 2)
 
     if net != 0:
         return "Order ID: %s - Payment imbalance: $%0.2f" % (order.id, net)
