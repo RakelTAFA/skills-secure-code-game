@@ -73,15 +73,23 @@ bool update_setting(int user_id, const char *index, const char *value) {
     if (user_id < 0 || user_id >= MAX_USERS)
         return false;
 
-    char *endptr;
+    char *endptr = NULL;
     long i, v;
     i = strtol(index, &endptr, 10);
     if (*endptr)
         return false;
 
     v = strtol(value, &endptr, 10);
-    if (*endptr || i >= SETTINGS_COUNT)
+    // Reponse : On ne testait pas le i négatif, ce qui nous faisait accéder à des données hors du tableau setting (setting[-7])
+    //           Et permettait de changer la valeur de isAdmin en y affectant 1 (true) dans grâce à setting[-7]
+    //           La ligne print juste en dessous rend bien compte du problème, l'adresse mémoire de isAdmin et de setting[-7] d'un même user est pareil !
+    //           Le hack est donc de changer des variables en y accédant via les adresses mémoires et dépassement de tableau !
+    printf("Memoire setting 0: %X - Memoire setting -7: %X, Memoire isAdmin: %X \n",
+        &(accounts[user_id]->setting[0]), &(accounts[user_id]->setting[-7]), &(accounts[user_id]->isAdmin));
+
+    if (*endptr || i < 0 || i >= SETTINGS_COUNT)
         return false;
+        
     accounts[user_id]->setting[i] = v;
     return true;
 }
