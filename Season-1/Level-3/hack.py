@@ -1,6 +1,6 @@
 import unittest
 import os
-import code as c
+import code_1 as c
 
 class TestTaxPayer(unittest.TestCase):
 
